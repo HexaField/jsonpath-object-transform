@@ -24,7 +24,9 @@
   "author": "David Lane <me@dvdln.com>",
   "license": "MIT",
   "dependencies": {
-    "jsonpath": "^0.2.3"
+    "chai": "^3.5.0",
+    "jsonpath": "^0.2.3",
+    "mocha": "^2.5.3"
   },
   "devDependencies": {
     "bower": "^1.3.1"
