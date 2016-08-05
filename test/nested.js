@@ -24,4 +24,9 @@ describe('Nesting', function() {
     expect(result).have.keys(['data','metadata']);
     expect(result.metadata).have.keys(['this']);
   });
+  it('allows for static nesting of arrays',function() {
+    var result = transform(cities, { data: { '$..[(@.foo || @.fod)]' : { name : '@name' } }, metadata: { this: ['*.that','*.think'] } } );
+    expect(result).have.keys(['data','metadata']);
+    assert.equal(result.metadata.this.length,2);
+  });
 });

@@ -1,7 +1,7 @@
 {
   "name": "jsonpath-object-transform",
   "version": "1.0.4",
-  "description": "Transform an object literal using JSONPath.",
+  "description": "Transform an object literal using jsonpath.",
   "main": "index.js",
   "scripts": {
     "test": "./node_modules/mocha/bin/mocha",
