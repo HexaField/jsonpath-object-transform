@@ -22,7 +22,7 @@ util.inherits(ObjectTransform, Transform);
 
 ObjectTransform.prototype._transform = function (obj, enc, cb) {
   var transformer = require('.');
-  this.push(transformer([obj],this.template, { 'toupper' : function(x) { return x ? x.toUpperCase() : ''; }}));
+  this.push(transformer(obj,this.template, { 'toupper' : function(x) { return x ? x.toUpperCase() : ''; }}));
   cb();
 };
 
@@ -44,7 +44,7 @@ util.inherits(KeyExtractor, Transform);
 KeyExtractor.prototype._transform = function (obj, enc, cb) {
   var transformer = require('.');
   if (this.template) {
-  	var keyval = jp.query([obj],'$['+this.template+']')[0];
+  	var keyval = jp.query(obj,'$.'+this.template)[0];
 	obj.KEY = keyval;//jp.query([obj],'$['+this.template+']', { 'toupper' : function(res,x) { res.UPPER = x.toUpperCase(); return "'UPPER'"; }});  	
   }
   this.push(obj);
@@ -112,7 +112,7 @@ var stream_transform = function(stream, template) {
 // console.log(convert_selector('$[(@.id)]')); // = generated stuff
 // console.log(convert_selector('$[*].foo')); // = * (with function)
 
-stream_transform(fs.createReadStream('test.json'),['$', { 'new' : '$[(@.bar)]' }]).on('data',function(dat) {
+stream_transform(fs.createReadStream('test.json'),['$', { 'new' : '@.bar' }]).on('data',function(dat) {
 	console.log("Simple lookup" ,dat);
 });
 
@@ -120,13 +120,13 @@ stream_transform(fs.createReadStream('test.json'),['$', { 'new' : '$[(@.bar)]' }
 // 	console.log("Function lookup", dat);
 // });
 
-//stream_transform(fs.createReadStream('test.json'),{ '$[*].new' : { 'new' : '$[(toupper(@.bar))]' } }).on('data',function(dat) {
-//	console.log("Object template", dat);
-//});
+stream_transform(fs.createReadStream('test.json'),{ '$[*].new' : { 'new' : '$.(toupper(@.bar))' } }).on('data',function(dat) {
+	console.log("Object template", dat);
+});
 
-//stream_transform(fs.createReadStream('test.json'),{ '$[*].new' : { 'new' : '$[(@.bar || @.baz)]' } }).on('data',function(dat) {
-//	console.log("Object template merge", dat);
-//});
+stream_transform(fs.createReadStream('test.json'),{ '$[*].new' : { 'new' : '$.(@.bar || @.baz)' } }).on('data',function(dat) {
+	console.log("Object template merge", dat);
+});
 
 
 // console.log(jp.parse('$foo'))

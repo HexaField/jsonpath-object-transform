@@ -20,9 +20,23 @@ var half_popn = function(result,data) {
   return "'half_popn'";
 };
 
+var half_popn_direct = function(data) {
+  result = {};
+  result['pop.50'] = data.map(function(val) { return val.population / 2 });
+  result['pop.25'] = data.map(function(val) { return val.population / 4 });
+  return result;
+};
+
 describe('Wildcard mapping of values', function() {
   it('Accepts values from a wildcard result from a function',function(){
     var result = transform(cities, { 'pop.*' : "$[(half_popn( @, @.cities ))]" }, { 'half_popn' : half_popn } );
+    expect(result).have.keys(['pop.25','pop.50']);
+    expect(result['pop.50']).have.members(cities.cities.map(function(val) { return val.population / 2 }));
+    expect(result['pop.25']).have.members(cities.cities.map(function(val) { return val.population / 4 }));
+    expect(result).not.have.keys(['pop.*','half_popn']);
+  });
+  it('Accepts values from a wildcard result from a function using direct syntax',function(){
+    var result = transform(cities, { 'pop.*' : "$.(half_popn( @.cities ))" }, { 'half_popn' : half_popn_direct } );
     expect(result).have.keys(['pop.25','pop.50']);
     expect(result['pop.50']).have.members(cities.cities.map(function(val) { return val.population / 2 }));
     expect(result['pop.25']).have.members(cities.cities.map(function(val) { return val.population / 4 }));

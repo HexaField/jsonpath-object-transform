@@ -13,7 +13,7 @@ var cities = [
 
 describe('Union mapping', function() {
   it('extracts a key from one of many attributes selected using an or',function(){
-    var result = transform(cities, { '$..[(@.foo || @.fod)]' : { 'name' : '@name' } } );
+    var result = transform(cities, { '$[(@.foo || @.fod)]' : { 'name' : '@name' } } );
     expect(result).have.keys(['bar','baz']);
     assert.equal(result.bar.length,2);
     assert.equal(result.baz.length,1);
