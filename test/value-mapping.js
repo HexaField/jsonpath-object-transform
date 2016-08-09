@@ -12,7 +12,21 @@ var cities = [
 ];
 
 describe('Union mapping', function() {
-  it('maps values on a combiner function',function(){
+  it('maps values on a combiner function using direct selector',function(){
+    var result = transform(cities, { '$[(@.foo || @.fod)]' : { 'name' : '@name' } } );
+    expect(result.bar.map(function(val) { return val.name })).have.members(['London','Outer London']);
+    expect(result.baz.map(function(val) { return val.name })).have.members(['Berlin']);
+  });
+  it('maps values on a combiner function on a child using direct selector',function(){
+    var result = transform({ parent: cities }, { '$.parent[(@.foo || @.fod)]' : { 'name' : '@name' } } );
+    expect(result.bar.map(function(val) { return val.name })).have.members(['London','Outer London']);
+    expect(result.baz.map(function(val) { return val.name })).have.members(['Berlin']);
+  });
+  it('maps values on a combiner function on a child using descendant selector',function(){
+    var result = transform({ parent: cities }, { '$..[(@.foo || @.fod)]' : { 'name' : '@name' } } );
+    expect(Object.keys(result)).not.have.members(['bar','baz']);
+  });
+  it('maps values on a combiner function using descendant syntax',function(){
     var result = transform(cities, { '$..[(@.foo || @.fod)]' : { 'name' : '@name' } } );
     expect(result.bar.map(function(val) { return val.name })).have.members(['London','Outer London']);
     expect(result.baz.map(function(val) { return val.name })).have.members(['Berlin']);
