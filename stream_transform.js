@@ -47,7 +47,9 @@ KeyExtractor.prototype._transform = function (obj, enc, cb) {
   	var keyval = jp.query(obj,'$.'+this.template)[0];
 	obj.KEY = keyval;//jp.query([obj],'$['+this.template+']', { 'toupper' : function(res,x) { res.UPPER = x.toUpperCase(); return "'UPPER'"; }});  	
   }
-  this.push(obj);
+  if (obj.KEY) {
+	this.push(obj);  	
+  }
   cb();
 };
 
@@ -95,6 +97,7 @@ var stream_transform_collect = function(stream, template) {
 				.pipe(new ObjectTransform(template[selector_string]))
 				.pipe(new KeyExtractor(selector.key))
 	});
+	pipes.forEach((pipe) => pipe.on('data',console.log.bind(console)));
 	return pipes[0];
 };
 
@@ -120,14 +123,9 @@ stream_transform(fs.createReadStream('test.json'),['$', { 'new' : '@.bar' }]).on
 // 	console.log("Function lookup", dat);
 // });
 
-stream_transform(fs.createReadStream('test.json'),{ '$[*].new' : { 'new' : '$.(toupper(@.bar))' } }).on('data',function(dat) {
-	console.log("Object template", dat);
-});
-
-stream_transform(fs.createReadStream('test.json'),{ '$[*].new' : { 'new' : '$.(@.bar || @.baz)' } }).on('data',function(dat) {
-	console.log("Object template merge", dat);
-});
-
+stream_transform(fs.createReadStream('test.json'),{ '$[*].new' : { 'new' : '$.(toupper(@.bar))' } });
+stream_transform(fs.createReadStream('test.json'),{ '$[*].new' : { 'new' : '$.(@.bar || @.baz)' } });
+stream_transform(fs.createReadStream('test.json'),{ '$[*].bara' : { 'bara' : '@.bar', 'baza' : '@.baz', 'static' : {'sub' : 'value' }}, '$[*].baza' : { 'bara2' : '@.bar', 'baza' : '@.baz' } });
 
 // console.log(jp.parse('$foo'))
 // console.log(jp.parse('$foo'))
