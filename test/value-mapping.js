@@ -11,7 +11,7 @@ var cities = [
   { name: "Rome",   "population": 2870528 }
 ];
 
-describe('Union mapping', function() {
+describe('Value mapping', function() {
   it('maps values on a combiner function using direct selector',function(){
     var result = transform(cities, { '$[(@.foo || @.fod)]' : { 'name' : '@name' } } );
     expect(result.bar.map(function(val) { return val.name })).have.members(['London','Outer London']);

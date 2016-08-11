@@ -17,7 +17,7 @@ var environ = {
 
 describe('User functions', function() {
   it('can run a custom function on the data',function(){
-    var result = transform(cities, { 'value': [ '$..[(toupper(@.name))]' ] }, environ );
+    var result = transform(cities, { 'value': [ '$[(toupper(@.name))]' ] }, environ );
     expect(result.value).have.members( cities.map(function(x) {  return x.name.toUpperCase(); }));
   });
 });
