@@ -26,6 +26,7 @@
   "author": "David Lane <me@dvdln.com>",
   "license": "MIT",
   "dependencies": {
+    "static-eval": "0.2.3",
     "JSONStream": "^1.1.4",
     "chai": "^3.5.0",
     "jsonpath": "^0.2.3",
