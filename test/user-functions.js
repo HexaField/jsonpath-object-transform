@@ -25,7 +25,7 @@ describe('User functions', function() {
   });
   it('can run a custom function on the data, looping over results',function(){
     var result = transform(values, { 'value': [ '$[*].(wrap_int(@))', { 'foo' : '$.val' } ] }, environ );
-    expect(result.value.map(function(x) { return x.val; })).have.members( [2,4,6,8] );
+    expect(result.value.map(function(x) { return x.foo; })).have.members( [2,4,6,8] );
   });
   it('can fill an array',function(){
     var result = transform(values, { 'value': [ '$', { 'foo' : '$' } ] }, environ );
