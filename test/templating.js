@@ -2,6 +2,12 @@ var assert = require('chai').assert;
 var transform = require('..');
 
 describe('Object templating', function() {
+  describe('numeric static values should copy over', function () {
+    it('should copy numeric values in templates directly over', function () {
+      assert.propertyVal(transform({},{foo:1}),'foo',1);
+      assert.propertyVal(transform({},{foo:'1'}),'foo','1');
+    });
+  });
   describe('simple key retrieval', function () {
     it('should retrieve simple values from objects', function () {
       var template = {
