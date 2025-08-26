@@ -3,14 +3,24 @@
   "version": "1.0.4",
   "description": "Transform an object literal using jsonpath.",
   "main": "index.js",
+  "types": "dist/index.d.ts",
   "scripts": {
-    "test": "./node_modules/mocha/bin/mocha",
-    "lint": "./node_modules/jshint/bin/jshint lib index.js",
-    "validate": "npm ls"
+    "pretest": "npm run build",
+    "test": "vitest run",
+    "test:mocha": "./node_modules/mocha/bin/mocha",
+    "lint": "eslint -c eslint.config.mjs index.js lib src test",
+    "lint:fix": "eslint -c eslint.config.mjs index.js lib src test --fix",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "build": "rm -rf ./dist && tsc --build tsconfig.build.json",
+    "build:rollup": "rm -rf ./dist && rollup -c",
+    "build:watch": "rollup -c -w",
+    "validate": "npm ls",
+    "dev": "vite",
+    "preview": "vite preview"
   },
   "repository": {
     "type": "git",
-    "url": "git://github.com/dvdln/jsonpath-object-transform.git"
+    "url": "git://github.com/hexafield/jsonpath-object-transform.git"
   },
   "keywords": [
     "jsonpath",
@@ -23,17 +33,38 @@
     "remap",
     "map"
   ],
-  "author": "David Lane <me@dvdln.com>",
+  "authors": [
+    "David Lane <me@dvdln.com>",
+    "Hexafield <me@hexafield.com>"
+  ],
   "license": "MIT",
   "dependencies": {
-    "static-eval": "^2.1.1",
     "JSONStream": "^1.1.4",
-    "chai": "^3.5.0",
-    "jsonpath": "^1.1.1",
-    "mocha": "^2.5.3",
+    "acorn": "^8.12.1",
+    "jsonpath-plus": "^10.3.0",
+    "static-eval": "^2.1.1",
     "unpipe": "^1.0.0"
   },
   "devDependencies": {
-    "jshint": "^2.9.2"
+    "@esbuild-plugins/node-globals-polyfill": "^0.2.3",
+    "@eslint/js": "^9.34.0",
+    "@originjs/vite-plugin-commonjs": "^1.0.3",
+    "@rollup/plugin-commonjs": "^26.0.1",
+    "@rollup/plugin-node-resolve": "^15.3.0",
+    "@rollup/plugin-typescript": "^12.1.1",
+    "@types/mocha": "^10.0.10",
+    "@types/node": "^24.3.0",
+    "@typescript-eslint/eslint-plugin": "^8.41.0",
+    "@typescript-eslint/parser": "^8.41.0",
+    "eslint": "^9.34.0",
+    "globals": "^15.15.0",
+    "rollup": "^4.22.4",
+  "tslib": "^2.8.1",
+  "typescript": "^5.9.2",
+  "chai": "^3.5.0",
+  "mocha": "^2.5.3",
+    "vite": "^5.4.8",
+    "vite-plugin-node-polyfills": "^0.24.0",
+    "vitest": "^2.1.3"
   }
 }

@@ -1,7 +1,6 @@
 var transform = require('..');
 var chai = require('chai');
 var expect = chai.expect;
-var assert = chai.assert;
 
 var cities = {
   cities: [
@@ -21,7 +20,7 @@ var half_popn = function(result,data) {
 };
 
 var half_popn_direct = function(data) {
-  result = {};
+  var result = {};
   result['pop.50'] = data.map(function(val) { return val.population / 2 });
   result['pop.25'] = data.map(function(val) { return val.population / 4 });
   return result;

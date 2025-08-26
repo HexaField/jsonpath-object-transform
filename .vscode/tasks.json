@@ -1,0 +1,138 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "Install new dependencies",
+			"type": "shell",
+			"command": "npm install",
+			"args": [],
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "Typecheck after migration",
+			"type": "shell",
+			"command": "npm run typecheck",
+			"problemMatcher": [
+				"$tsc"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Typecheck after code fix",
+			"type": "shell",
+			"command": "npm run typecheck",
+			"problemMatcher": [
+				"$tsc"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Build after migration",
+			"type": "shell",
+			"command": "npm run build",
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "Run tests after migration",
+			"type": "shell",
+			"command": "npm test",
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "Rebuild as CJS",
+			"type": "shell",
+			"command": "npm run build",
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "Run tests again",
+			"type": "shell",
+			"command": "npm test",
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "Typecheck all TS",
+			"type": "shell",
+			"command": "npm run typecheck",
+			"problemMatcher": [
+				"$tsc"
+			],
+			"group": "build"
+		},
+		{
+			"label": "Clean and rebuild dist",
+			"type": "shell",
+			"command": "rm -rf dist && npm run build",
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "Run tests (full)",
+			"type": "shell",
+			"command": "npm test",
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "Run tests after fixing CJS bridge",
+			"type": "shell",
+			"command": "npm test",
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "Reinstall after package.json changes",
+			"type": "shell",
+			"command": "rm -rf node_modules package-lock.json && npm install",
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "Run tests to verify export bridge is fixed",
+			"type": "shell",
+			"command": "npm test",
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "Build and run tests after adapter fixes",
+			"type": "shell",
+			"command": "npm run build && npm test",
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "Rebuild and run tests after expression/container fixes",
+			"type": "shell",
+			"command": "npm run build && npm test",
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "Run tests after iterateKeysObject and env wrapping fix",
+			"type": "shell",
+			"command": "npm run build && npm test",
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "Build and test after grouping fallback",
+			"type": "shell",
+			"command": "npm run build && npm test",
+			"problemMatcher": [],
+			"group": "build"
+		},
+		{
+			"label": "Rebuild and run tests after subscript/grouping fixes",
+			"type": "shell",
+			"command": "npm run build && npm test",
+			"problemMatcher": [],
+			"group": "build"
+		}
+	]
+}

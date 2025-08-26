@@ -1,5 +1,6 @@
 /*jshint node:true*/
 
-module.exports = require('./lib/jsonpath-object-transform.js');
-
-module.exports.Stream = require('./lib/stream');
+// Re-export compiled TypeScript bundle for CJS consumers
+const bundle = require('./dist/index.js');
+module.exports = bundle.default || bundle;
+module.exports.Stream = bundle.Stream || (bundle.default && bundle.default.Stream);
