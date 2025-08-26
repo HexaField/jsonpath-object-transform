@@ -26,10 +26,10 @@
   "author": "David Lane <me@dvdln.com>",
   "license": "MIT",
   "dependencies": {
-    "static-eval": "0.2.3",
+    "static-eval": "^2.1.1",
     "JSONStream": "^1.1.4",
     "chai": "^3.5.0",
-    "jsonpath": "^0.2.3",
+    "jsonpath": "^1.1.1",
     "mocha": "^2.5.3",
     "unpipe": "^1.0.0"
   },
