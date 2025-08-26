@@ -1,21 +1,26 @@
-import transform from "../dist/index";
+import transform from '../dist/index.js'
 
 const path = {
   foo: [
-    "$.some.crazy",
+    '$.some.crazy',
     {
-      bar: "$.example",
-    },
-  ],
-};
+      bar: '$.example'
+    }
+  ]
+}
 
 const data = {
   some: {
-    crazy: [{ example: "A" }, { example: "B" }],
-  },
-};
+    crazy: [{ example: 'A' }, { example: 'B' }]
+  }
+}
 
-const result = transform(data, path);
+const expected = {
+  foo: [{ bar: 'A' }, { bar: 'B' }]
+}
 
-const el = document.getElementById("app");
-el.textContent = JSON.stringify(result, null, 2);
+const result = transform(data, path)
+
+console.log('Expected:', JSON.stringify(expected, null, 2))
+console.log('Result:', JSON.stringify(result, null, 2))
+console.log('Match:', JSON.stringify(expected) === JSON.stringify(result))

@@ -1,12 +1,12 @@
 // @ts-check
-import js from '@eslint/js';
-import globals from 'globals';
+import js from '@eslint/js'
+import globals from 'globals'
 
 /** @type {import('eslint').Linter.FlatConfig[]} */
 export default [
   js.configs.recommended,
   {
-    files: ["**/*.js"],
+    files: ['**/*.js'],
     languageOptions: {
       ecmaVersion: 2021,
       sourceType: 'module',
@@ -25,4 +25,4 @@ export default [
       'no-unused-vars': ['warn', { args: 'none', caughtErrors: 'none' }]
     }
   }
-];
+]

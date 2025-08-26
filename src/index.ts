@@ -1,5 +1,3 @@
-import transform from "./jsonpath-object-transform";
-import makeStream from "./stream";
+import transform from './jsonpath-object-transform.js'
 
-export default transform;
-export { makeStream as Stream };
+export default transform

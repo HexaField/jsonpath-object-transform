@@ -2,3 +2,4 @@
 /bower_components/
 package-lock.json
 dist
+.vscode/tasks.json
