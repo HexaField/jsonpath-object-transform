@@ -1,6 +1,6 @@
 {
-  "name": "jsonpath-object-transform",
-  "version": "1.0.4",
+  "name": "@hexafield/jsonpath-object-transform",
+  "version": "1.0.0",
   "description": "Transform an object literal using jsonpath.",
   "type": "module",
   "exports": {
@@ -44,11 +44,9 @@
   ],
   "license": "MIT",
   "dependencies": {
-    "acorn": "^8.12.1",
+    "acorn": "^8.15.0",
     "jsonpath-plus": "^10.3.0",
-    "JSONStream": "^1.1.4",
-    "static-eval": "^2.1.1",
-    "unpipe": "^1.0.0"
+    "static-eval": "^2.1.1"
   },
   "devDependencies": {
     "@esbuild-plugins/node-globals-polyfill": "^0.2.3",
@@ -56,6 +54,7 @@
     "@ianvs/prettier-plugin-sort-imports": "^4.6.2",
     "@originjs/vite-plugin-commonjs": "^1.0.3",
     "@types/node": "^24.3.0",
+    "@types/static-eval": "^0.2.34",
     "@typescript-eslint/eslint-plugin": "^8.41.0",
     "@typescript-eslint/parser": "^8.41.0",
     "eslint": "^9.34.0",

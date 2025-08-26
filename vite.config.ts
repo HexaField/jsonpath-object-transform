@@ -10,7 +10,7 @@ export default defineConfig({
     open: true
   },
   optimizeDeps: {
-    exclude: ['jsonpath-object-transform']
+    exclude: ['@hexafield/jsonpath-object-transform']
   },
   plugins: [viteCommonjs(), nodePolyfills(), NodeGlobalsPolyfillPlugin()]
 })

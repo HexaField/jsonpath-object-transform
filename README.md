@@ -1,5 +1,7 @@
 # jsonpath-object-transform
 
+Fork of https://github.com/hirenj/jsonpath-object-transform, which is a fork of https://github.com/dvdln/jsonpath-object-transform
+
 > Transform an object literal using JSONPath.
 
 Pulls data from an object literal using JSONPath and generate a new objects based on a template. Each of the template's properties can pull a single property from the source data or an array of all results found by its JSONPath. When pulling an array of data you can also supply a subtemplate to transform each item in the array.
@@ -9,7 +11,7 @@ JSONPath is like XPath for JavaScript objects. To learn the syntax, read the doc
 ## Usage
 
 ```js
-import transform from 'jsonpath-object-transform'
+import transform from '@hexafield/jsonpath-object-transform'
 
 const template = {
   foo: [

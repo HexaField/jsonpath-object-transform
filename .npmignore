@@ -1,0 +1,8 @@
+example
+src
+test
+.eslintignore
+.prettierrc.json
+eslint.config.mjs
+vite.config.ts
+vitest.config.mjs
