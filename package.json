@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "Transform an object literal using jsonpath.",
   "type": "module",
+  "publishConfig": {
+    "access": "public"
+  },
   "exports": {
     ".": {
       "import": "./dist/index.js",
