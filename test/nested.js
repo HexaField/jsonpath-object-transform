@@ -39,7 +39,7 @@ describe('Nesting', function () {
       { items: [{ a: 1 }, { a: 2 }] },
       {
         nested: {
-          first: ['$.items[*]', { v: '$.a', ARRAY: 'collapse' }]
+          first: ['$.items[*]', { v: '@.a', ARRAY: 'collapse' }]
         }
       }
     )
@@ -52,7 +52,7 @@ describe('Nesting', function () {
       { t: 'y', v: 2 },
       { t: 'x', v: 3 }
     ]
-    const tpl = { data: { '$[*].t': { values: ['$', { n: '@v' }] } } }
+  const tpl = { data: { '$[*].t': { values: ['$', { n: '@v' }] } } }
     const res = transform(data, tpl)
     const xVals = [].concat.apply(
       [],

@@ -30,7 +30,7 @@ describe('User functions', function () {
     )
   })
   it('can run a custom function on the data, looping over results', function () {
-    const result = transform(values, { value: ['$[*].(wrap_int(@))', { foo: '$.val' }] }, environ)
+    const result = transform(values, { value: ['$[*].(wrap_int(@))', { foo: '@.val' }] }, environ)
     expect(
       result.value.map(function (x) {
         return x.foo
@@ -38,7 +38,7 @@ describe('User functions', function () {
     ).have.members([2, 4, 6, 8])
   })
   it('can fill an array', function () {
-    const result = transform(values, { value: ['$', { foo: '$' }] }, environ)
+    const result = transform(values, { value: ['$', { foo: '@' }] }, environ)
     expect(
       result.value.map(function (x) {
         return x.foo
@@ -47,7 +47,7 @@ describe('User functions', function () {
   })
 
   it('supports env functions inside array subtemplates', function () {
-    const result = transform(values, { out: ['$[*].(wrap_int(@))', { up: '$.val' }] }, environ)
+    const result = transform(values, { out: ['$[*].(wrap_int(@))', { up: '@.val' }] }, environ)
     expect(
       result.out.map(function (x) {
         return x.up
@@ -56,7 +56,7 @@ describe('User functions', function () {
   })
 
   it('supports collapse after mapping via env function', function () {
-    const result = transform(values, { first: ['$[*].(wrap_int(@))', { up: '$.val', ARRAY: 'collapse' }] }, environ)
+    const result = transform(values, { first: ['$[*].(wrap_int(@))', { up: '@.val', ARRAY: 'collapse' }] }, environ)
     expect(result.first).to.deep.equal({ up: 2 })
   })
 })

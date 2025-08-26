@@ -108,7 +108,7 @@ describe('Value mapping', function () {
 
   it('drops empty array elements when subtemplate has only undefined fields', function () {
     const data = [{ v: 1 }, {}, { v: 3 }]
-    const tpl = { arr: ['$', { out: '$.v' }] }
+  const tpl = { arr: ['$', { out: '@.v' }] }
     const res = transform(data, tpl)
     expect(res.arr).to.be.an('array').that.has.length(2)
     expect(

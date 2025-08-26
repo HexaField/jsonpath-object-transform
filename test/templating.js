@@ -76,7 +76,7 @@ describe('Object templating', function () {
 
     it('should drop items in array subtemplate when required field missing', function () {
       const template = {
-        out: ['$.items[*]', { value: '$.required' }]
+        out: ['$.items[*]', { value: '@.required' }]
       }
       const data = { items: [{ required: 1 }, {}, { required: 3 }] }
       const res = transform(data, template)

@@ -28,8 +28,8 @@ describe('Edge cases and expected behaviors', function () {
 
   describe('Array selection and cleanup', function () {
     it('compacts arrays by removing null/undefined items', function () {
-      const data = [{ v: 1 }, {}, { v: 3 }]
-      const tpl = { vals: ['$', { out: '$.v' }] }
+  const data = [{ v: 1 }, {}, { v: 3 }]
+  const tpl = { vals: ['$', { out: '@.v' }] }
       const res = transform(data, tpl)
       // Expect entries without v to be dropped from array
       expect(
@@ -104,7 +104,7 @@ describe('Edge cases and expected behaviors', function () {
   describe('ARRAY helper flags', function () {
     it('collapses a subtemplate array when ARRAY === "collapse"', function () {
       const data = { items: [{ x: 1 }, { x: 2 }] }
-      const tpl = { first: ['$.items[*]', { val: '$.x', ARRAY: 'collapse' }] }
+      const tpl = { first: ['$.items[*]', { val: '@.x', ARRAY: 'collapse' }] }
       const res = transform(data, tpl)
       expect(res.first).to.deep.equal({ val: 1 })
     })
@@ -112,10 +112,95 @@ describe('Edge cases and expected behaviors', function () {
     it('converts numeric-keyed objects into arrays when ARRAY is truthy', function () {
       const data = { items: [{ a: 'A', b: 'B' }] }
       // Build a numeric-keyed object in subtemplate to trigger ARRAY coercion
-      const tpl = { out: ['$.items[*]', { 0: '$.a', 1: '$.b', ARRAY: true }] }
+  const tpl = { out: ['$.items[*]', { 0: '@.a', 1: '@.b', ARRAY: true }] }
       const res = transform(data, tpl)
       // Expect out to be [ ['A','B'] ]
       expect(res.out).to.deep.equal([['A', 'B']])
+    })
+  })
+
+  describe('array with upper level context', () => {
+    it('should convert object from one schema to another', () => {
+      const input = [
+        {
+          name: 'Object 1',
+          url: 'http://example.com/object1.json',
+          relationships: [
+            {
+              predicate_url: 'http://example.com/predicateA.json',
+              object_url: 'http://example.com/object2.json'
+            },
+            {
+              predicate_url: 'http://example.com/predicateB.json',
+              object_url: 'http://example.com/object3.json'
+            }
+          ]
+        },
+        {
+          name: 'Object 2',
+          url: 'http://example.com/object2.json',
+          relationships: [
+            {
+              predicate_url: 'http://example.com/predicateC.json',
+              object_url: 'http://example.com/object4.json'
+            }
+          ]
+        }
+      ]
+
+      const transformSchema = {
+        nodes: [
+          '$.',
+          {
+            id: '@.url',
+            label: '@.name'
+          }
+        ],
+        edges: [
+          '$..relationships[*]',
+          {
+            source: '$.url',
+            target: '@.object_url',
+            type: '@.predicate_url'
+          }
+        ]
+      }
+
+      const expectedOutput = {
+        nodes: [
+          {
+            id: 'http://example.com/object1.json',
+            label: 'Object 1'
+          },
+          {
+            id: 'http://example.com/object2.json',
+            label: 'Object 2'
+          }
+        ],
+        edges: [
+          {
+            source: 'http://example.com/object1.json',
+            target: 'http://example.com/object2.json',
+            type: 'http://example.com/predicateA.json'
+          },
+          {
+            source: 'http://example.com/object1.json',
+            target: 'http://example.com/object3.json',
+            type: 'http://example.com/predicateB.json'
+          },
+          {
+            source: 'http://example.com/object2.json',
+            target: 'http://example.com/object4.json',
+            type: 'http://example.com/predicateC.json'
+          }
+        ]
+      }
+
+      const output = transform(input, transformSchema)
+
+      console.log('output:', output)
+
+      expect(output).toEqual(expectedOutput)
     })
   })
 })

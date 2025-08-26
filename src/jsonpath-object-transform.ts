@@ -2,6 +2,10 @@ import * as acorn from 'acorn'
 import { JSONPath } from 'jsonpath-plus'
 import evaluate from 'static-eval'
 
+// Root reference for JSONPath queries; set during transform()
+let ROOT_DATA: any
+let SCOPE_ROOT: any
+
 // Simple env scoping helper (replaces jsonPath.withEnv)
 function withEnv(env: Record<string, any>, actions: () => void) {
   ;(withEnv as any)._env = env || {}
@@ -61,13 +65,22 @@ function evalExpressionWithResultContainer(src: string, ctx: any, env: Record<st
   return container[keyStr]
 }
 
+function normalizeAtPath(pathStr: string): string {
+  // Supports '@.a.b', '@a', '@[0]' -> '$.a.b', '$.a', '$[0]'
+  if (!pathStr || pathStr[0] !== '@') return pathStr
+  if (pathStr.length === 1) return '$'
+  return pathStr[1] === '.' ? '$' + pathStr.slice(1) : '$.' + pathStr.slice(1)
+}
+
 function jpQuery(json: any, pathStr: string, ctxForScripts: any, env: Record<string, any>): any[] {
   // Handle member script at end: ....(expr)
   const memberMatch = /(.*)\.\((.*)\)$/.exec(pathStr || '')
   if (memberMatch) {
     const basePath = memberMatch[1] || '$'
     const expr = memberMatch[2] as string
-    const baseVals = JSONPath({ path: basePath, json, wrap: true }) as any[]
+  const useCtx = basePath.startsWith('@')
+  const normBase = useCtx ? normalizeAtPath(basePath) : basePath
+  const baseVals = JSONPath({ path: normBase, json: useCtx ? json : SCOPE_ROOT, wrap: true }) as any[]
     return baseVals.map((val) => evalExpression(expr, val, env))
   }
   // Handle subscript script at end: ...[(expr)]
@@ -75,7 +88,9 @@ function jpQuery(json: any, pathStr: string, ctxForScripts: any, env: Record<str
   if (subscriptMatch) {
     const basePath = subscriptMatch[1] || '$'
     const expr = subscriptMatch[2] as string
-    const baseVals = JSONPath({ path: basePath, json, wrap: true }) as any[]
+  const useCtx = basePath.startsWith('@')
+  const normBase = useCtx ? normalizeAtPath(basePath) : basePath
+  const baseVals = JSONPath({ path: normBase, json: useCtx ? json : SCOPE_ROOT, wrap: true }) as any[]
     const out: any[] = []
     const looksLikeContainerCall = /\w+\s*\([^)]*,/.test(expr)
     baseVals.forEach((val) => {
@@ -128,8 +143,12 @@ function jpQuery(json: any, pathStr: string, ctxForScripts: any, env: Record<str
     })
     return out
   }
-  // Default: normal JSONPath
-  return JSONPath({ path: pathStr, json, wrap: true }) as any[]
+  // Default: normal JSONPath, choose root vs ctx by prefix
+  if (pathStr && pathStr[0] === '@') {
+    const norm = normalizeAtPath(pathStr)
+    return JSONPath({ path: norm, json, wrap: true }) as any[]
+  }
+  return JSONPath({ path: pathStr, json: SCOPE_ROOT, wrap: true }) as any[]
 }
 
 type AnyObject = Record<string, any>
@@ -140,31 +159,55 @@ function typeOf(
   return Array.isArray(obj) ? 'array' : typeof obj
 }
 
+function findOwnerOfArray(root: any, targetArr: any): any | undefined {
+  let found: any | undefined
+  const seen = new Set<any>()
+  function visit(node: any) {
+    if (found || node === null || typeof node !== 'object') return
+    if (seen.has(node)) return
+    seen.add(node)
+    if (Array.isArray(node)) {
+      for (const item of node) {
+        if (item === targetArr) {
+          // Parent of targetArr is the array node itself; continue up in caller
+          return
+        }
+        visit(item)
+        if (found) return
+      }
+    } else {
+      for (const key of Object.keys(node)) {
+        const val = (node as any)[key]
+        if (val === targetArr) {
+          found = node
+          return
+        }
+        visit(val)
+        if (found) return
+      }
+    }
+  }
+  visit(root)
+  return found
+}
+
 function seekSingle(data: any, pathStr: string, result: AnyObject, key: any) {
   if (pathStr === '$' || pathStr === '@') {
-    if (key.toString().indexOf('.*') >= 0 && data && typeof data === 'object') {
+  // When selecting entire object for wildcard expansion, use current vs root accordingly
+  const obj = pathStr === '@' ? data : ROOT_DATA
+    if (key.toString().indexOf('.*') >= 0 && obj && typeof obj === 'object') {
       const prefix = key.replace('.*', '')
-      Object.keys(data)
+      Object.keys(obj)
         .filter(function (outkey) {
           return outkey.indexOf(prefix) === 0
         })
         .forEach(function (outkey) {
-          result[outkey] = data[outkey]
+          result[outkey] = obj[outkey]
         })
       return
     }
-    result[key] = data
+    result[key] = obj
     return
-  }
-
-  if (pathStr[0] === '@') {
-    if (pathStr.length > 1) {
-      if (pathStr[1] === '.') {
-        pathStr = '$' + pathStr.slice(1)
-      } else {
-        pathStr = '$.' + pathStr.slice(1)
-      }
-    }
   }
 
   if (pathStr.indexOf('$') !== 0 && pathStr.indexOf('@') !== 0) {
@@ -210,19 +253,75 @@ function seekArray(data: any, pathArr: any[], result: AnyObject, key: any) {
     return
   }
 
-  const seek = jpQuery(data, path as string, data, currentEnv()) || []
+  // For array selection, compute values and their scope roots (parents)
+  let seek: any[] = []
+  let parents: any[] = []
+  let baseRoot: any = SCOPE_ROOT
+  if (typeof path === 'string') {
+    // If no subtemplate, delegate to jpQuery fully
+    if (!subpath) {
+      ;(result as any)[key] = jpQuery(data, path as string, data, currentEnv()) || []
+      return
+    }
+    if (path === '$') {
+      // Select current data as a single result
+      seek = [data]
+      parents = [undefined]
+    } else {
+      const useCtx = path.startsWith('@')
+      const norm = useCtx ? normalizeAtPath(path) : path
+      const baseJson = useCtx ? data : SCOPE_ROOT
+      baseRoot = baseJson
+      // If the path includes script or member expressions, fall back to jpQuery
+      if (/\(.*\)/.test(path)) {
+        seek = jpQuery(data, path, data, currentEnv()) || []
+        parents = []
+      } else {
+        seek = (JSONPath({ path: norm, json: baseJson, wrap: true }) as any[]) || []
+        try {
+          parents = (JSONPath({ path: norm, json: baseJson, resultType: 'parent', wrap: true }) as any[]) || []
+        } catch {
+          parents = []
+        }
+      }
+    }
+  } else {
+    seek = jpQuery(data, path as string, data, currentEnv()) || []
+    parents = []
+  }
 
   if (seek.length && subpath) {
     const arr: any[] = []
     ;(result as any)[key] = arr
+    const prevScope = SCOPE_ROOT
+    const iterate = (items: any[], parentList: any[]) => {
+      items.forEach(function (item: any, index: number) {
+        const parent = parentList && parentList.length ? parentList[index] : undefined
+        let scopeCandidate: any
+        if (Array.isArray(parent)) {
+          // Use the owner object which holds this array
+          const owner = findOwnerOfArray(baseRoot, parent)
+          scopeCandidate = typeof owner !== 'undefined' ? owner : baseRoot
+        } else if (parent && typeof parent === 'object') {
+          scopeCandidate = parent
+        } else {
+          scopeCandidate = baseRoot
+        }
+        SCOPE_ROOT = scopeCandidate
+        try {
+          walk(item, subpath, arr as any, index)
+        } finally {
+          SCOPE_ROOT = prevScope
+        }
+      })
+    }
     if (Array.isArray(seek[0])) {
-      seek[0].forEach(function (item: any, index: number) {
-        walk(item, subpath, arr as any, index)
-      })
+      // When the query returned the entire array as a single result
+      const items = seek[0]
+      const parentList = items.map(() => (typeof parents[0] !== 'undefined' ? parents[0] : undefined))
+      iterate(items, parentList)
     } else {
-      seek.forEach(function (item: any, index: number) {
-        walk(item, subpath, arr as any, index)
-      })
+      iterate(seek, parents)
     }
     if (subpath.ARRAY === 'collapse') {
       const collapsed = arr[0]
@@ -274,17 +373,21 @@ function iterateKeysObject(data: any, template: any, result: AnyObject, searchPa
     const basePart = scriptMatch[1] || '$'
     const expr = scriptMatch[2] as string
     const contexts: any[] = []
-    if (/\.\.$/.test(basePart)) {
+    if (/\.\.?$/.test(basePart)) {
       // Descendant selector case: only group when traversing an array-like root
       // Legacy behavior avoided grouping on objects at arbitrary depths for $..[(@...)] on wrapped roots
-      const baseVals = JSONPath({ path: basePart.replace(/\.$/, ''), json: data, wrap: true }) as any[]
+      const useCtx = basePart.startsWith('@')
+      const norm = useCtx ? normalizeAtPath(basePart.replace(/\.$/, '')) : basePart.replace(/\.$/, '')
+      const baseVals = JSONPath({ path: norm, json: useCtx ? data : ROOT_DATA, wrap: true }) as any[]
       baseVals.forEach((v) => {
         if (Array.isArray(v)) {
           contexts.push(...v)
         }
       })
     } else {
-      const baseVals = JSONPath({ path: basePart, json: data, wrap: true }) as any[]
+      const useCtx = basePart.startsWith('@')
+      const norm = useCtx ? normalizeAtPath(basePart) : basePart
+      const baseVals = JSONPath({ path: norm, json: useCtx ? data : ROOT_DATA, wrap: true }) as any[]
       baseVals.forEach((v) => {
         if (Array.isArray(v)) {
           contexts.push(...v)
@@ -313,8 +416,11 @@ function iterateKeysObject(data: any, template: any, result: AnyObject, searchPa
   }
 
   // Default: Pull keys and their parent objects using aligned result arrays
-  const keys = JSONPath({ path: searchPath, json: data, wrap: true }) as any[]
-  const parents = JSONPath({ path: searchPath, json: data, resultType: 'parent', wrap: true }) as any[]
+  const useCtx = searchPath && searchPath[0] === '@'
+  const norm = useCtx ? normalizeAtPath(searchPath) : searchPath
+  const baseJson = useCtx ? data : ROOT_DATA
+  const keys = JSONPath({ path: norm, json: baseJson, wrap: true }) as any[]
+  const parents = JSONPath({ path: norm, json: baseJson, resultType: 'parent', wrap: true }) as any[]
   parents.forEach(function (obj: any, idx: number) {
     const object_key = keys[idx]
     if (!object_key) {
@@ -383,7 +489,16 @@ export default function transform(data: any, path: any, env?: Record<string, any
     Object.freeze(env)
   }
   withEnv(env, function () {
-    walk(data, path, result)
+    const prevRoot = ROOT_DATA
+    const prevScope = SCOPE_ROOT
+    ROOT_DATA = data
+    SCOPE_ROOT = data
+    try {
+      walk(data, path, result)
+    } finally {
+      ROOT_DATA = prevRoot
+      SCOPE_ROOT = prevScope
+    }
   })
   return result
 }

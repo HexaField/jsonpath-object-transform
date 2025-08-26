@@ -8,6 +8,10 @@ Pulls data from an object literal using JSONPath and generate a new objects base
 
 JSONPath is like XPath for JavaScript objects. To learn the syntax, read the documentation for the [jsonpath-plus](https://www.npmjs.com/package/jsonpath-plus) package on npm and the [original article](http://goessner.net/articles/JsonPath/) by Stefan Goessner.
 
+Notes on special tokens in templates:
+- `$` always refers to the ROOT of the input, regardless of depth.
+- `@` refers to the CURRENT item/context when evaluating inside subtemplates or scripts.
+
 ## Usage
 
 ```js
@@ -138,16 +142,16 @@ Result:
 }
 ```
 
-Use an `Array` with a `String` and an `Object` to assign all results returned from your JSONPath and transform each of the objects with a subtemplate.
+Use an `Array` with a `String` and an `Object` to assign all results returned from your JSONPath and transform each of the objects with a subtemplate. Inside the subtemplate, use `@` to access the current item; use `$` to access the root.
 
 #### Example
 
 ```js
 const template = {
-  foo: [$..example, {
-    bar: '$.demo'
+  foo: ['$.a, $.b..example', {
+    bar: '@.demo'
   }]
-};
+}
 
 const data = {
   a: {
@@ -160,7 +164,7 @@ const data = {
       demo: 'qux'
     }
   }
-};
+}
 ```
 
 Result:
