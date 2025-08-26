@@ -42,4 +42,17 @@ describe('Wildcard mapping of values', function() {
     expect(result['pop.25']).have.members(cities.cities.map(function(val) { return val.population / 4 }));
     expect(result).not.have.keys(['pop.*','half_popn']);
   });
+
+  it('Expands wildcard destination keys when source path is $', function(){
+    var data = { 'pre.one': 1, 'pre.two': 2, other: 3 };
+    var res = transform(data, { 'pre.*': '$' });
+    expect(res).to.have.keys(['pre.one','pre.two']);
+    expect(res).to.not.have.property('other');
+  });
+
+  it('Expands wildcard destination keys when source path is @', function(){
+    var data = { 'pre.x': 'x', 'pre.y': 'y', z: 'z' };
+    var res = transform(data, { 'pre.*': '@' });
+    expect(res).to.have.keys(['pre.x','pre.y']);
+  });
 });

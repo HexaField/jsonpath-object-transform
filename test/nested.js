@@ -29,4 +29,23 @@ describe('Nesting', function() {
     expect(result).have.keys(['data','metadata']);
     assert.equal(result.metadata.this.length,2);
   });
+
+  it('supports nested array subtemplates with collapse', function() {
+    var result = transform({ items: [ { a: 1 }, { a: 2 } ] }, {
+      nested: {
+        first: ['$.items[*]', { v: '$.a', ARRAY: 'collapse' }]
+      }
+    });
+    expect(result.nested.first).to.deep.equal({ v: 1 });
+  });
+
+  it('supports nested grouping plus arrays', function() {
+    var data = [ { t: 'x', v: 1 }, { t: 'y', v: 2 }, { t: 'x', v: 3 } ];
+    var tpl = { data: { '$[*].t': { values: ['$', { n: '@v' }] } } };
+    var res = transform(data, tpl);
+    var xVals = [].concat.apply([], res.data.x.map(function(o){ return o.values.map(function(x){ return x.n; }); }));
+    var yVals = [].concat.apply([], res.data.y.map(function(o){ return o.values.map(function(x){ return x.n; }); }));
+    expect(xVals).to.have.members([1,3]);
+    expect(yVals).to.have.members([2]);
+  });
 });

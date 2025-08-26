@@ -32,4 +32,14 @@ describe('User functions', function() {
     expect(result.value.map(function(x) { return x.foo; })).have.members( [ 1,2,3,4 ] );
   });
 
+  it('supports env functions inside array subtemplates', function(){
+    var result = transform(values, { out: ['$[*].(wrap_int(@))', { up: '$.val' }] }, environ);
+    expect(result.out.map(function(x){ return x.up; })).to.deep.equal([2,4,6,8]);
+  });
+
+  it('supports collapse after mapping via env function', function(){
+    var result = transform(values, { first: ['$[*].(wrap_int(@))', { up: '$.val', ARRAY: 'collapse' }] }, environ);
+    expect(result.first).to.deep.equal({ up: 2 });
+  });
+
 });

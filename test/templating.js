@@ -61,5 +61,27 @@ describe('Object templating', function() {
       assert.propertyVal(res.wanted[1], 'type', 'element');
       assert.propertyVal(res.wanted[2], 'type', 'element2');
     });
+
+    it('should pull an array of scalar values when array path returns multiple matches', function () {
+      var template = {
+        list: ['$..example']
+      };
+      var data = {
+        a: { example: 'bar' },
+        b: { example: 'baz' }
+      };
+      var res = transform(data, template);
+      assert.deepEqual(res.list.sort(), ['bar','baz']);
+    });
+
+    it('should drop items in array subtemplate when required field missing', function () {
+      var template = {
+        out: ['$.items[*]', { value: '$.required' }]
+      };
+      var data = { items: [ { required: 1 }, { }, { required: 3 } ] };
+      var res = transform(data, template);
+      assert.deepEqual(res.out.map(function(x){ return x.value; }), [1,3]);
+      assert.equal(res.out.length, 2);
+    });
   });
 });

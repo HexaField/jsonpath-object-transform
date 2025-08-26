@@ -30,4 +30,16 @@ describe('Union mapping', function() {
     expect(result).have.keys(['Berlin','London']);
   });
 
+  it('maps arrays from unioned attribute sets', function(){
+    var result = transform(cities, {
+      '$[*].foo': { vals: ['$', { n: '@population' }] },
+      '$[*].fod': { vals: ['$', { n: '@population' }] }
+    });
+    expect(result).to.have.keys(['bar','baz']);
+    var barVals = [].concat.apply([], result.bar.map(function(o){ return o.vals.map(function(x){ return x.n; }); }));
+    var bazVals = [].concat.apply([], result.baz.map(function(o){ return o.vals.map(function(x){ return x.n; }); }));
+    expect(barVals).to.include(8615246);
+    expect(bazVals).to.include(3517424);
+  });
+
 });
